@@ -3,4 +3,5 @@ COPY . /var/www/html
 ENV WEBROOT /var/www/html/public
 ENV APP_ENV=production
 ENV APP_DEBUG=false
-RUN composer install --no-dev
+RUN php artisan migrate --force
+RUN composer install --no-dev --ignore-platform-reqs
