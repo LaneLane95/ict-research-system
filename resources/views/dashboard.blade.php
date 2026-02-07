@@ -103,7 +103,7 @@
                             <tr class="text-[9px] font-black text-slate-400 uppercase tracking-widest">
                                 <th class="px-6 py-5">Date Received</th>
                                 <th class="px-6 py-5">Title & Author</th>
-                                <th class="px-6 py-5">Theme/Type</th>
+                                <th class="px-6 py-5">Origin (School/Dist)</th>
                                 <th class="px-6 py-5">Dates</th>
                                 <th class="px-6 py-5 text-center no-print">Actions</th>
                             </tr>
@@ -117,8 +117,9 @@
                                     <p class="text-[9px] text-indigo-600 font-bold uppercase mt-1">{{ $res->author }}</p>
                                 </td>
                                 <td class="px-6 py-5 text-[9px] font-bold text-slate-500 uppercase">
-                                    {{ $res->sub_type }}<br>
-                                    <span class="text-indigo-400">{{ $res->theme ?? '' }}</span>
+                                    @if($res->school_name) <span class="text-slate-900">{{ $res->school_name }}</span><br> @endif
+                                    @if($res->district) <span class="text-slate-400">Dist: {{ $res->district }}</span><br> @endif
+                                    <span class="text-indigo-400">{{ $res->sub_type }} {{ $res->theme ? '| '.$res->theme : '' }}</span>
                                 </td>
                                 <td class="px-6 py-5 text-[9px] font-black text-slate-400">
                                     <span class="text-blue-600 uppercase">E: {{ $res->endorsement_date ?? '---' }}</span><br>
@@ -181,15 +182,37 @@
                 </div>
 
                 @if(request('category') == 'DepEd')
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase">School ID</label>
+                    <input type="text" name="school_id" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase">District</label>
+                    <input type="text" name="district" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold">
+                </div>
                 <div class="col-span-2">
                     <label class="text-[9px] font-black text-slate-400 uppercase">Theme</label>
                     <input type="text" name="theme" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold" placeholder="e.g. Teaching & Learning">
                 </div>
                 @endif
 
-                <div><label class="text-[9px] font-black text-slate-400 uppercase">Date Received</label><input type="date" name="date_received" required class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs"></div>
-                <div><label class="text-[9px] font-black text-slate-400 uppercase">Author Name</label><input type="text" name="author" required class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold"></div>
-                <div class="col-span-2"><label class="text-[9px] font-black text-slate-400 uppercase">Title</label><textarea name="title" required class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold" rows="2"></textarea></div>
+                <div class="col-span-2">
+                    <label class="text-[9px] font-black text-slate-400 uppercase">School/Office Name</label>
+                    <input type="text" name="school_name" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold">
+                </div>
+
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase">Date Received</label>
+                    <input type="date" name="date_received" required class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase">Author Name</label>
+                    <input type="text" name="author" required class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold">
+                </div>
+                <div class="col-span-2">
+                    <label class="text-[9px] font-black text-slate-400 uppercase">Title</label>
+                    <textarea name="title" required class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold" rows="2"></textarea>
+                </div>
                 
                 <div class="col-span-2 flex gap-3 mt-4">
                     <button type="submit" class="flex-grow py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs shadow-xl">Save Record</button>
@@ -205,9 +228,16 @@
             </div>
             <form id="editForm" method="POST" class="p-10 grid grid-cols-2 gap-4">
                 @csrf @method('PUT')
-                <div class="col-span-2"><label class="text-[9px] font-black text-slate-400 uppercase">Title</label><textarea name="title" id="edit_title" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold" rows="2"></textarea></div>
+                <div class="col-span-2">
+                    <label class="text-[9px] font-black text-slate-400 uppercase">Title</label>
+                    <textarea name="title" id="edit_title" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold" rows="2"></textarea>
+                </div>
                 <div><label class="text-[9px] font-black text-slate-400 uppercase">Author</label><input type="text" name="author" id="edit_author" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold"></div>
                 <div><label class="text-[9px] font-black text-slate-400 uppercase">School Name</label><input type="text" name="school_name" id="edit_school_name" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold"></div>
+                
+                <div><label class="text-[9px] font-black text-slate-400 uppercase">School ID</label><input type="text" name="school_id" id="edit_school_id" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold"></div>
+                <div><label class="text-[9px] font-black text-slate-400 uppercase">District</label><input type="text" name="district" id="edit_district" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold"></div>
+
                 <div><label class="text-[9px] font-black text-slate-400 uppercase">Endorsement Date</label><input type="date" name="endorsement_date" id="edit_endorsement_date" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold"></div>
                 <div><label class="text-[9px] font-black text-slate-400 uppercase">Released Date</label><input type="date" name="released_date" id="edit_released_date" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold"></div>
                 
@@ -244,6 +274,8 @@
             document.getElementById('edit_title').value = data.title;
             document.getElementById('edit_author').value = data.author;
             document.getElementById('edit_school_name').value = data.school_name || '';
+            document.getElementById('edit_school_id').value = data.school_id || '';
+            document.getElementById('edit_district').value = data.district || '';
             document.getElementById('edit_endorsement_date').value = data.endorsement_date || '';
             document.getElementById('edit_released_date').value = data.released_date || '';
             document.getElementById('edit_coc_date').value = data.coc_date || '';
