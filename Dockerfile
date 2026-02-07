@@ -7,17 +7,20 @@ ENV WEBROOT /var/www/html/public
 ENV APP_ENV=production
 ENV APP_DEBUG=true
 
-# 1. INSTALL DEPENDENCIES (Eto yung nawala kaya nag-fail)
+# 1. Install dependencies
 RUN composer install --no-dev --ignore-platform-reqs
 
-# 2. Gawa ng database folder at file
+# 2. FORCE GENERATE NAMESPACE (Ito ang fix sa error mo!)
+RUN composer dump-autoload --optimize
+
+# 3. Gawa ng database folder at file
 RUN mkdir -p /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache
 RUN touch /var/www/html/database/database.sqlite
 
-# 3. Force permissions
+# 4. Force permissions
 RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 
-# 4. Clear everything (Gagana na 'to kasi may vendor na)
+# 5. Clear everything
 RUN php artisan config:clear
 
 CMD ["/start.sh"]
