@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Research;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Database\QueryException;
 
 class ResearchController extends Controller
 {
@@ -13,17 +11,18 @@ class ResearchController extends Controller
     {
         $selectedCategory = $request->query('category');
         $search = $request->query('search');
-        $categories = ['DepEd', 'Non-DepEd', 'Innovation'];
         
         $query = Research::query();
 
-        // Archive logic
+        // Pag 'Archived' ang pinili sa filter/link, ipakita lang ang naka-archive
         if ($selectedCategory == 'Archived') {
             $query->where('is_archived', true);
-        } elseif ($selectedCategory) {
-            $query->where('category', $selectedCategory)->where('is_archived', false);
         } else {
+            // Default: Ipakita lang ang hindi naka-archive
             $query->where('is_archived', false);
+            if ($selectedCategory) {
+                $query->where('category', $selectedCategory);
+            }
         }
 
         if ($search) {
@@ -35,6 +34,7 @@ class ResearchController extends Controller
 
         $researches = $query->latest()->get();
 
+        // Stats para sa Dashboard Cards
         $overallStats = [
             'total' => Research::count(),
             'deped' => Research::where('category', 'DepEd')->where('is_archived', false)->count(),
@@ -42,36 +42,29 @@ class ResearchController extends Controller
             'innovation' => Research::where('category', 'Innovation')->where('is_archived', false)->count(),
         ];
 
-        return view('dashboard', compact('researches', 'categories', 'selectedCategory', 'search', 'overallStats'));
+        return view('dashboard', compact('researches', 'selectedCategory', 'search', 'overallStats'));
     }
 
     public function store(Request $request) 
     {
-        try {
-            Research::create([
-                'category'      => $request->category,
-                'sub_type'      => $request->sub_type,
-                'date_received' => $request->date_received,
-                'author'        => $request->author,
-                'title'         => $request->title,
-                'is_archived'   => false,
-            ]);
-        } catch (QueryException $e) {
-            if (str_contains($e->getMessage(), 'no column named is_archived')) {
-                Artisan::call('migrate', ['--force' => true]);
-                Research::create([
-                    'category'      => $request->category,
-                    'sub_type'      => $request->sub_type,
-                    'date_received' => $request->date_received,
-                    'author'        => $request->author,
-                    'title'         => $request->title,
-                    'is_archived'   => false,
-                ]);
-            } else {
-                throw $e;
-            }
-        }
+        Research::create([
+            'category'      => $request->category,
+            'sub_type'      => $request->sub_type,
+            'date_received' => $request->date_received,
+            'author'        => $request->author,
+            'title'         => $request->title,
+            'is_archived'   => false,
+        ]);
         return back()->with('success', 'Saved successfully!');
+    }
+
+    // ETO YUNG ARCHIVE FUNCTION
+    public function archive($id) 
+    {
+        $research = Research::findOrFail($id);
+        $research->is_archived = true;
+        $research->save();
+        return back()->with('success', 'Moved to Archived Modules!');
     }
 
     public function update(Request $request, $id) 
@@ -81,17 +74,9 @@ class ResearchController extends Controller
         return back()->with('success', 'Updated successfully!');
     }
 
-    public function archive($id) 
-    {
-        $research = Research::findOrFail($id);
-        $research->is_archived = true;
-        $research->save();
-        return back()->with('success', 'Record Archived!');
-    }
-
     public function destroy($id) 
     {
         Research::findOrFail($id)->delete();
-        return back();
+        return back()->with('success', 'Deleted!');
     }
 }

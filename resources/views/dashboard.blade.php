@@ -26,20 +26,24 @@
             <h1 class="text-white font-black text-xl uppercase tracking-tighter">Research Monitoring <span class="text-indigo-500">ZC</span></h1>
         </div>
         <nav class="flex-grow p-4 space-y-2 overflow-y-auto">
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl {{ !$selectedCategory ? 'bg-indigo-600 text-white shadow-lg' : 'hover:bg-slate-900' }}">
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl {{ !request('category') ? 'bg-indigo-600 text-white shadow-lg' : 'hover:bg-slate-900' }}">
                 <span class="text-[10px] font-bold uppercase tracking-widest">🏠 Main Dashboard</span>
             </a>
             
             <div class="pt-6 pb-2 px-4 text-[9px] font-black text-slate-500 uppercase tracking-widest">Modules</div>
-            @foreach($categories as $cat)
-                <a href="{{ route('dashboard', ['category' => $cat]) }}" class="flex items-center gap-3 px-4 py-3 rounded-xl {{ $selectedCategory == $cat ? 'bg-indigo-600 text-white shadow-lg' : 'hover:bg-slate-900' }}">
-                    <span class="text-[10px] font-bold uppercase">{{ $cat }} Research</span>
-                </a>
-            @endforeach
+            <a href="{{ route('dashboard', ['category' => 'DepEd']) }}" class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request('category') == 'DepEd' ? 'bg-indigo-600 text-white shadow-lg' : 'hover:bg-slate-900' }}">
+                <span class="text-[10px] font-bold uppercase text-white">DepEd Research</span>
+            </a>
+            <a href="{{ route('dashboard', ['category' => 'Non-DepEd']) }}" class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request('category') == 'Non-DepEd' ? 'bg-indigo-600 text-white shadow-lg' : 'hover:bg-slate-900' }}">
+                <span class="text-[10px] font-bold uppercase text-white">Non-DepEd Research</span>
+            </a>
+            <a href="{{ route('dashboard', ['category' => 'Innovation']) }}" class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request('category') == 'Innovation' ? 'bg-indigo-600 text-white shadow-lg' : 'hover:bg-slate-900' }}">
+                <span class="text-[10px] font-bold uppercase text-white">Innovation Research</span>
+            </a>
 
             <div class="pt-6 pb-2 px-4 text-[9px] font-black text-slate-500 uppercase tracking-widest">Archives</div>
-            <a href="{{ route('dashboard', ['category' => 'Archived']) }}" class="flex items-center gap-3 px-4 py-3 rounded-xl {{ $selectedCategory == 'Archived' ? 'bg-slate-700 text-white shadow-lg' : 'hover:bg-slate-900' }}">
-                <span class="text-[10px] font-bold uppercase">📁 Archived Records</span>
+            <a href="{{ route('dashboard', ['category' => 'Archived']) }}" class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request('category') == 'Archived' ? 'bg-slate-700 text-white shadow-lg' : 'hover:bg-slate-900' }}">
+                <span class="text-[10px] font-bold uppercase tracking-widest">📁 Archived Records</span>
             </a>
         </nav>
         <div class="p-6 text-center border-t border-slate-900 italic text-[10px] text-slate-500 uppercase font-black">
@@ -112,17 +116,17 @@
                                     <span class="text-emerald-600">R: {{ $res->released_date ?? '---' }}</span><br>
                                     <span class="text-indigo-600 font-bold">COC: {{ $res->coc_date ?? 'PENDING' }}</span>
                                 </td>
-                                <td class="px-6 py-5 text-center no-print space-x-3">
+                                <td class="px-6 py-5 text-center no-print space-x-3 flex items-center justify-center">
                                     <button onclick="openEditModal({{ $res }})" class="text-amber-600 font-black text-[9px] uppercase border-b-2 border-amber-100 hover:border-amber-600">Edit</button>
                                     
                                     @if(!$res->is_archived)
-                                    <form action="{{ url('/research/archive/' . $res->id) }}" method="POST" class="inline">
+                                    <form action="{{ route('research.archive', $res->id) }}" method="POST" class="inline">
                                         @csrf
-                                        <button type="submit" class="text-indigo-500 font-black text-[9px] uppercase border-b-2 border-indigo-100 hover:border-indigo-600">Archive</button>
+                                        <button type="submit" onclick="return confirm('Move to Archived Modules?')" class="text-indigo-500 font-black text-[9px] uppercase border-b-2 border-indigo-100 hover:border-indigo-600">Archive</button>
                                     </form>
                                     @endif
 
-                                    <form action="{{ route('research.destroy', $res->id) }}" method="POST" class="inline" onsubmit="return confirm('Delete record?')">
+                                    <form action="{{ route('research.destroy', $res->id) }}" method="POST" class="inline" onsubmit="return confirm('Delete record permanently?')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="text-rose-500 font-black text-[9px] uppercase border-b-2 border-rose-100 hover:border-rose-600">Del</button>
                                     </form>
@@ -151,8 +155,8 @@
                     </select>
                 </div>
                 <div><label class="text-[9px] font-black text-slate-400 uppercase">Date Received</label><input type="date" name="date_received" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs"></div>
-                <div><input type="text" name="author" placeholder="Author Name" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 mt-4 text-xs font-bold"></div>
-                <div class="col-span-2"><textarea name="title" placeholder="Research Title" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold" rows="2"></textarea></div>
+                <div><label class="text-[9px] font-black text-slate-400 uppercase">Author Name</label><input type="text" name="author" placeholder="Author Name" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold"></div>
+                <div class="col-span-2"><label class="text-[9px] font-black text-slate-400 uppercase">Research Title</label><textarea name="title" placeholder="Research Title" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold" rows="2"></textarea></div>
                 <div class="col-span-2 flex gap-3 mt-4">
                     <button type="submit" class="flex-grow py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs shadow-xl">Save Record</button>
                     <button type="button" onclick="toggleModal('addModal')" class="px-8 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-xs">Cancel</button>
@@ -184,20 +188,3 @@
             </form>
         </div>
     </div>
-
-    <script>
-        function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
-        function openEditModal(data) {
-            const form = document.getElementById('editForm');
-            form.action = `/research/update/${data.id}`;
-            document.getElementById('edit_title').value = data.title;
-            document.getElementById('edit_author').value = data.author;
-            document.getElementById('edit_school_name').value = data.school_name || '';
-            document.getElementById('edit_endorsement_date').value = data.endorsement_date || '';
-            document.getElementById('edit_released_date').value = data.released_date || '';
-            document.getElementById('edit_coc_date').value = data.coc_date || '';
-            toggleModal('editModal');
-        }
-    </script>
-</body>
-</html>
