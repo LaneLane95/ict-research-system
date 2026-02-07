@@ -18,20 +18,16 @@ RUN composer dump-autoload --optimize
 RUN mkdir -p /var/www/html/database
 RUN touch /var/www/html/database/database.sqlite
 
-# Permissions (Sobrang importante para sa SQLite!)
+# Permissions (Sobrang importante!)
 RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 
-# --- ETO YUNG DINAGDAG NATIN BESH ---
-# Pinipilit natin ang migration habang nagbi-build para sigurado
+# --- FORCE MIGRATION DURING BUILD ---
 RUN php artisan migrate --force
 
 RUN php artisan config:clear
 
-# Eto ang trick sa image na 'to: Pwede tayong maglagay ng scripts sa /var/www/html/scripts/
-# Pero para mabilis, gagamitin natin ang ENV variable na supported ng richarvey image
+# Startup script para sigurado sa Render
 ENV RUN_SCRIPTS=1
-
-# Gagawa tayo ng startup script para mag-migrate uli "just in case" pag-start ng container
 RUN mkdir -p /var/www/html/scripts
 RUN echo "php artisan migrate --force" > /var/www/html/scripts/install.sh
 RUN chmod +x /var/www/html/scripts/install.sh

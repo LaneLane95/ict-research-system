@@ -16,7 +16,7 @@ Route::post('/research/archive/{id}', [ResearchController::class, 'archive'])->n
 Route::get('/setup-system', function () {
     try {
         Artisan::call('migrate', ['--force' => true]);
-        return "✅ Database Sync Done! Try mo na mag-add, Besh!";
+        return "✅ BESH! Database updated successfully via Link!";
     } catch (\Exception $e) {
         return "❌ Error: " . $e->getMessage();
     }
