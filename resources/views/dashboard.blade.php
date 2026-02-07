@@ -114,6 +114,14 @@
                                 </td>
                                 <td class="px-6 py-5 text-center no-print space-x-3">
                                     <button onclick="openEditModal({{ $res }})" class="text-amber-600 font-black text-[9px] uppercase border-b-2 border-amber-100 hover:border-amber-600">Edit</button>
+                                    
+                                    @if(!$res->is_archived)
+                                    <form action="{{ url('/research/archive/' . $res->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" class="text-indigo-500 font-black text-[9px] uppercase border-b-2 border-indigo-100 hover:border-indigo-600">Archive</button>
+                                    </form>
+                                    @endif
+
                                     <form action="{{ route('research.destroy', $res->id) }}" method="POST" class="inline" onsubmit="return confirm('Delete record?')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="text-rose-500 font-black text-[9px] uppercase border-b-2 border-rose-100 hover:border-rose-600">Del</button>
@@ -159,11 +167,13 @@
             <form id="editForm" method="POST" class="p-10 grid grid-cols-2 gap-4">
                 @csrf @method('PUT')
                 <div class="col-span-2"><label class="text-[9px] font-black text-slate-400 uppercase">Title</label><textarea name="title" id="edit_title" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold" rows="2"></textarea></div>
+                <div><label class="text-[9px] font-black text-slate-400 uppercase">Author</label><input type="text" name="author" id="edit_author" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold"></div>
+                <div><label class="text-[9px] font-black text-slate-400 uppercase">School Name</label><input type="text" name="school_name" id="edit_school_name" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold"></div>
                 <div><label class="text-[9px] font-black text-slate-400 uppercase">Endorsement Date</label><input type="date" name="endorsement_date" id="edit_endorsement_date" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold"></div>
                 <div><label class="text-[9px] font-black text-slate-400 uppercase">Released Date</label><input type="date" name="released_date" id="edit_released_date" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold"></div>
                 
                 <div class="col-span-2 bg-indigo-50 p-6 rounded-2xl">
-                    <label class="text-[9px] font-black text-indigo-600 uppercase">COC Date (Entering this will Archive the record)</label>
+                    <label class="text-[9px] font-black text-indigo-600 uppercase">COC Date</label>
                     <input type="date" name="coc_date" id="edit_coc_date" class="w-full bg-white border-2 border-indigo-100 rounded-xl px-4 py-2 text-xs font-bold mt-2">
                 </div>
 
@@ -181,6 +191,8 @@
             const form = document.getElementById('editForm');
             form.action = `/research/update/${data.id}`;
             document.getElementById('edit_title').value = data.title;
+            document.getElementById('edit_author').value = data.author;
+            document.getElementById('edit_school_name').value = data.school_name || '';
             document.getElementById('edit_endorsement_date').value = data.endorsement_date || '';
             document.getElementById('edit_released_date').value = data.released_date || '';
             document.getElementById('edit_coc_date').value = data.coc_date || '';

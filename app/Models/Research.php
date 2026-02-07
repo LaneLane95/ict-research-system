@@ -7,10 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Research extends Model
 {
     // 1. Siguraduhin na plural 'researches' ang table name 
-    // (kasi 'researches' ang ginamit natin sa bagong migration)
     protected $table = 'researches'; 
 
-    // 2. Dito natin ililista lahat ng fields na hiningi mo para payagan ni Laravel
+    // 2. Nilista natin dito lahat ng fields, kasama ang 'is_archived'
     protected $fillable = [
         'category',
         'sub_type',
@@ -25,6 +24,12 @@ class Research extends Model
         'endorsement_date',
         'released_date',
         'completion_date',
-        'coc_date'
+        'coc_date',
+        'is_archived' // <--- Eto yung dinagdag natin para sa Archive feature
+    ];
+
+    // 3. Casting para sigurado tayong True/False ang is_archived
+    protected $casts = [
+        'is_archived' => 'boolean',
     ];
 }
