@@ -40,36 +40,29 @@ class ResearchController extends Controller
         return view('dashboard', compact('researches', 'categories', 'selectedCategory', 'search', 'overallStats'));
     }
 
-    public function update(Request $request, $id)
-    {
-        $research = Research::findOrFail($id);
-        
-        // Eto yung fix para ma-save lahat ng dates
-        $research->title = $request->title;
-        $research->author = $request->author;
-        $research->school_name = $request->school_name;
-        $research->endorsement_date = $request->endorsement_date;
-        $research->released_date = $request->released_date;
-        $research->coc_date = $request->coc_date;
-        
-        $research->save();
-
-        return back()->with('success', 'Updated successfully!');
-    }
-
-    public function archive($id)
-    {
-        $research = Research::findOrFail($id);
-        $research->is_archived = true;
-        $research->save();
-        return back()->with('success', 'Archived successfully!');
-    }
-
     public function store(Request $request) {
-        $data = $request->all();
-        $data['is_archived'] = false;
-        Research::create($data);
-        return back();
+        Research::create([
+            'category'      => $request->category,
+            'sub_type'      => $request->sub_type,
+            'date_received' => $request->date_received,
+            'author'        => $request->author,
+            'title'         => $request->title,
+            'is_archived'   => false,
+        ]);
+        return back()->with('success', 'Saved!');
+    }
+
+    public function update(Request $request, $id) {
+        $research = Research::findOrFail($id);
+        $research->update($request->all());
+        return back()->with('success', 'Updated!');
+    }
+
+    public function archive($id) {
+        $res = Research::findOrFail($id);
+        $res->is_archived = true;
+        $res->save();
+        return back()->with('success', 'Archived!');
     }
 
     public function destroy($id) {
