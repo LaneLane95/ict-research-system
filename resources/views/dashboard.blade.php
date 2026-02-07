@@ -29,12 +29,18 @@
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl {{ !$selectedCategory ? 'bg-indigo-600 text-white shadow-lg' : 'hover:bg-slate-900' }}">
                 <span class="text-[10px] font-bold uppercase tracking-widest">🏠 Main Dashboard</span>
             </a>
+            
             <div class="pt-6 pb-2 px-4 text-[9px] font-black text-slate-500 uppercase tracking-widest">Modules</div>
             @foreach($categories as $cat)
                 <a href="{{ route('dashboard', ['category' => $cat]) }}" class="flex items-center gap-3 px-4 py-3 rounded-xl {{ $selectedCategory == $cat ? 'bg-indigo-600 text-white shadow-lg' : 'hover:bg-slate-900' }}">
                     <span class="text-[10px] font-bold uppercase">{{ $cat }} Research</span>
                 </a>
             @endforeach
+
+            <div class="pt-6 pb-2 px-4 text-[9px] font-black text-slate-500 uppercase tracking-widest">Archives</div>
+            <a href="{{ route('dashboard', ['category' => 'Archived']) }}" class="flex items-center gap-3 px-4 py-3 rounded-xl {{ $selectedCategory == 'Archived' ? 'bg-slate-700 text-white shadow-lg' : 'hover:bg-slate-900' }}">
+                <span class="text-[10px] font-bold uppercase">📁 Archived Records</span>
+            </a>
         </nav>
         <div class="p-6 text-center border-t border-slate-900 italic text-[10px] text-slate-500 uppercase font-black">
             Dev: Shielane C. Garcia @2026
@@ -49,10 +55,12 @@
             <div class="flex items-center gap-4">
                 <form action="{{ route('dashboard') }}" method="GET" class="relative">
                     <input type="hidden" name="category" value="{{ $selectedCategory }}">
-                    <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Search title/author/school..." class="bg-slate-100 border-none rounded-xl px-4 py-2 text-xs font-bold w-64 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Search title/author..." class="bg-slate-100 border-none rounded-xl px-4 py-2 text-xs font-bold w-64 focus:ring-2 focus:ring-indigo-500 outline-none">
                 </form>
-                <button onclick="window.print()" class="bg-slate-800 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-slate-200">Print Report</button>
+                <button onclick="window.print()" class="bg-slate-800 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase">Print Report</button>
+                @if($selectedCategory != 'Archived')
                 <button onclick="toggleModal('addModal')" class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-indigo-200">+ New Entry</button>
+                @endif
             </div>
             @endif
         </header>
@@ -61,18 +69,18 @@
             @if(!$selectedCategory)
                 <div class="grid grid-cols-4 gap-6 mb-12">
                     <div class="bg-indigo-600 p-8 rounded-[2.5rem] shadow-xl text-white">
-                        <p class="text-[10px] font-black uppercase opacity-70">Grand Total</p>
+                        <p class="text-[10px] font-black uppercase opacity-70">Total Records</p>
                         <h3 class="text-4xl font-black italic">{{ $overallStats['total'] }}</h3>
                     </div>
                     <div class="bg-white p-8 rounded-[2.5rem] border-l-8 border-l-blue-500 shadow-sm border border-slate-200">
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">DepEd</p>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ongoing DepEd</p>
                         <h3 class="text-4xl font-black text-slate-800 italic">{{ $overallStats['deped'] }}</h3>
                     </div>
-                    <div class="bg-white p-8 rounded-[2.5rem] border-l-8 border-l-amber-500 shadow-sm border border-slate-200">
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Non-DepEd</p>
-                        <h3 class="text-4xl font-black text-slate-800 italic">{{ $overallStats['non_deped'] }}</h3>
-                    </div>
                     <div class="bg-white p-8 rounded-[2.5rem] border-l-8 border-l-emerald-500 shadow-sm border border-slate-200">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Archived (Completed)</p>
+                        <h3 class="text-4xl font-black text-slate-800 italic">{{ $overallStats['archived'] }}</h3>
+                    </div>
+                    <div class="bg-white p-8 rounded-[2.5rem] border-l-8 border-l-amber-500 shadow-sm border border-slate-200">
                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Innovation</p>
                         <h3 class="text-4xl font-black text-slate-800 italic">{{ $overallStats['innovation'] }}</h3>
                     </div>
@@ -87,8 +95,7 @@
                             <tr class="text-[9px] font-black text-slate-400 uppercase tracking-widest">
                                 <th class="px-6 py-5">Received</th>
                                 <th class="px-6 py-5">Details</th>
-                                <th class="px-6 py-5">School Info</th>
-                                <th class="px-6 py-5 text-center">Dates</th>
+                                <th class="px-6 py-5">Status/Dates</th>
                                 <th class="px-6 py-5 text-center no-print">Actions</th>
                             </tr>
                         </thead>
@@ -98,15 +105,12 @@
                                 <td class="px-6 py-5 text-[10px] font-bold text-slate-500">{{ $res->date_received }}</td>
                                 <td class="px-6 py-5">
                                     <p class="text-[11px] font-black text-slate-900 uppercase leading-tight">{{ $res->title }}</p>
-                                    <p class="text-[9px] text-indigo-600 font-bold uppercase mt-1">{{ $res->author }}</p>
+                                    <p class="text-[9px] text-indigo-600 font-bold uppercase mt-1">{{ $res->author }} | {{ $res->category }}</p>
                                 </td>
-                                <td class="px-6 py-5 text-[10px] font-bold text-slate-500 uppercase">
-                                    {{ $res->school_name }}<br><span class="text-[9px] opacity-60">ID: {{ $res->school_id }} | {{ $res->district }}</span>
-                                </td>
-                                <td class="px-6 py-5 text-center text-[9px] font-black text-slate-400">
+                                <td class="px-6 py-5 text-[9px] font-black text-slate-400">
                                     <span class="text-blue-600">E: {{ $res->endorsement_date ?? '---' }}</span><br>
                                     <span class="text-emerald-600">R: {{ $res->released_date ?? '---' }}</span><br>
-                                    <span class="text-indigo-600">C: {{ $res->coc_date ?? '---' }}</span>
+                                    <span class="text-indigo-600 font-bold">COC: {{ $res->coc_date ?? 'PENDING' }}</span>
                                 </td>
                                 <td class="px-6 py-5 text-center no-print space-x-3">
                                     <button onclick="openEditModal({{ $res }})" class="text-amber-600 font-black text-[9px] uppercase border-b-2 border-amber-100 hover:border-amber-600">Edit</button>
@@ -117,7 +121,7 @@
                                 </td>
                             </tr>
                             @empty
-                            <tr><td colspan="5" class="px-8 py-10 text-center text-slate-400 font-bold italic uppercase">No records found.</td></tr>
+                            <tr><td colspan="4" class="px-8 py-10 text-center text-slate-400 font-bold italic uppercase">No records found.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -127,36 +131,20 @@
     </main>
 
     <div id="addModal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div class="bg-indigo-600 p-8 text-white">
-                <h3 class="text-xl font-black uppercase italic tracking-tighter">New {{ $selectedCategory }} Entry</h3>
-            </div>
+        <div class="bg-white w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-2xl">
+            <div class="bg-indigo-600 p-8 text-white"><h3 class="text-xl font-black uppercase italic">New {{ $selectedCategory }} Entry</h3></div>
             <form action="{{ route('research.store') }}" method="POST" class="p-10 grid grid-cols-2 gap-4">
                 @csrf
                 <input type="hidden" name="category" value="{{ $selectedCategory }}">
                 <div class="col-span-2">
-                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Sub-Type</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase">Sub-Type</label>
                     <select name="sub_type" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold">
-                        @if($selectedCategory == 'DepEd')
-                            <option value="Proposal">Proposal</option>
-                            <option value="Ongoing">Ongoing</option>
-                        @elseif($selectedCategory == 'Non-DepEd')
-                            <option value="Thesis">Thesis</option>
-                            <option value="Dissertation">Dissertation</option>
-                        @else
-                            <option value="Innovation">Innovation</option>
-                        @endif
+                        <option value="Proposal">Proposal</option><option value="Ongoing">Ongoing</option><option value="Thesis">Thesis</option>
                     </select>
                 </div>
-                <div><label class="text-[9px] font-black text-slate-400 uppercase ml-2">Date Received</label><input type="date" name="date_received" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs"></div>
-                <div><label class="text-[9px] font-black text-slate-400 uppercase ml-2">School ID</label><input type="text" name="school_id" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs"></div>
-                <div class="col-span-2"><input type="text" name="school_name" placeholder="School Name" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs"></div>
-                <div><input type="text" name="district" placeholder="District" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs"></div>
-                <div><input type="text" name="author" placeholder="Author Name" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs"></div>
-                <div class="col-span-2"><textarea name="title" placeholder="Research Title" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs" rows="2"></textarea></div>
-                <div><input type="text" name="type_of_research" placeholder="Type of Research" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs"></div>
-                <div><input type="text" name="theme" placeholder="Theme" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs"></div>
-                
+                <div><label class="text-[9px] font-black text-slate-400 uppercase">Date Received</label><input type="date" name="date_received" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs"></div>
+                <div><input type="text" name="author" placeholder="Author Name" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 mt-4 text-xs font-bold"></div>
+                <div class="col-span-2"><textarea name="title" placeholder="Research Title" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold" rows="2"></textarea></div>
                 <div class="col-span-2 flex gap-3 mt-4">
                     <button type="submit" class="flex-grow py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs shadow-xl">Save Record</button>
                     <button type="button" onclick="toggleModal('addModal')" class="px-8 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-xs">Cancel</button>
@@ -166,21 +154,17 @@
     </div>
 
     <div id="editModal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div class="bg-amber-500 p-8 text-white">
-                <h3 class="text-xl font-black uppercase italic tracking-tighter">Update Record</h3>
-            </div>
+        <div class="bg-white w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-2xl">
+            <div class="bg-amber-500 p-8 text-white"><h3 class="text-xl font-black uppercase italic">Update Record</h3></div>
             <form id="editForm" method="POST" class="p-10 grid grid-cols-2 gap-4">
                 @csrf @method('PUT')
-                <div class="col-span-2"><label class="text-[9px] font-black text-slate-400 uppercase ml-2">Title</label><textarea name="title" id="edit_title" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold outline-none" rows="2"></textarea></div>
-                <div><label class="text-[9px] font-black text-slate-400 uppercase ml-2">Author</label><input type="text" name="author" id="edit_author" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold outline-none"></div>
-                <div><label class="text-[9px] font-black text-slate-400 uppercase ml-2">School Name</label><input type="text" name="school_name" id="edit_school_name" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold outline-none"></div>
-                <div><label class="text-[9px] font-black text-slate-400 uppercase ml-2">Endorsement Date</label><input type="date" name="endorsement_date" id="edit_endorsement_date" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold outline-none"></div>
-                <div><label class="text-[9px] font-black text-slate-400 uppercase ml-2">Released Date</label><input type="date" name="released_date" id="edit_released_date" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold outline-none"></div>
+                <div class="col-span-2"><label class="text-[9px] font-black text-slate-400 uppercase">Title</label><textarea name="title" id="edit_title" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold" rows="2"></textarea></div>
+                <div><label class="text-[9px] font-black text-slate-400 uppercase">Endorsement Date</label><input type="date" name="endorsement_date" id="edit_endorsement_date" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold"></div>
+                <div><label class="text-[9px] font-black text-slate-400 uppercase">Released Date</label><input type="date" name="released_date" id="edit_released_date" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold"></div>
                 
-                <div class="col-span-2">
-                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">COC Date</label>
-                    <input type="date" name="coc_date" id="edit_coc_date" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold outline-none">
+                <div class="col-span-2 bg-indigo-50 p-6 rounded-2xl">
+                    <label class="text-[9px] font-black text-indigo-600 uppercase">COC Date (Entering this will Archive the record)</label>
+                    <input type="date" name="coc_date" id="edit_coc_date" class="w-full bg-white border-2 border-indigo-100 rounded-xl px-4 py-2 text-xs font-bold mt-2">
                 </div>
 
                 <div class="col-span-2 flex gap-3 mt-4">
@@ -193,21 +177,13 @@
 
     <script>
         function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
-        
         function openEditModal(data) {
             const form = document.getElementById('editForm');
-            // Siguraduhin na tama ang route sa Controller mo
             form.action = `/research/update/${data.id}`;
-            
             document.getElementById('edit_title').value = data.title;
-            document.getElementById('edit_author').value = data.author;
-            document.getElementById('edit_school_name').value = data.school_name || '';
             document.getElementById('edit_endorsement_date').value = data.endorsement_date || '';
             document.getElementById('edit_released_date').value = data.released_date || '';
-            
-            // FILL COC DATE VALUE
             document.getElementById('edit_coc_date').value = data.coc_date || '';
-            
             toggleModal('editModal');
         }
     </script>
