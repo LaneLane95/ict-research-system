@@ -46,14 +46,18 @@ class ResearchController extends Controller
 
     public function store(Request $request) 
     {
+        // BESH, ETO NA YUNG DINAGDAG NATIN:
         $data = [
-            'category'      => $request->category,
-            'sub_type'      => $request->sub_type,
-            'date_received' => $request->date_received,
-            'author'        => $request->author,
-            'title'         => $request->title,
-            'theme'         => $request->title,
-            'is_archived'   => false,
+            'category'       => $request->category,
+            'sub_type'       => $request->sub_type,
+            'date_received'  => $request->date_received,
+            'author'         => $request->author,
+            'title'          => $request->title,
+            'theme'          => $request->theme, // Fixed: was $request->title
+            'school_id'      => $request->school_id,   // <--- ETO NA SILA BESH
+            'district'       => $request->district,    // <--- ETO NA SILA BESH
+            'school_name'    => $request->school_name, // <--- ETO NA SILA BESH
+            'is_archived'    => false,
         ];
 
         try {
@@ -81,6 +85,18 @@ class ResearchController extends Controller
     public function update(Request $request, $id) 
     {
         $research = Research::findOrFail($id);
+        
+        // BESH, NAG-ADD AKO NG VALIDATION: 
+        // Para pag-click ng update, hindi mawala yung laman ng fields
+        $request->validate([
+            'title' => 'required',
+            'author' => 'required',
+            'school_id' => 'nullable',
+            'district' => 'nullable',
+            'school_name' => 'nullable',
+            'theme' => 'nullable',
+        ]);
+
         $research->update($request->all());
         return back()->with('success', 'Updated successfully!');
     }
