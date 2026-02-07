@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Research;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Database\QueryException;
 
 class ResearchController extends Controller
 {
@@ -47,14 +49,32 @@ class ResearchController extends Controller
 
     public function store(Request $request) 
     {
-        Research::create([
+        $data = [
             'category'      => $request->category,
             'sub_type'      => $request->sub_type,
             'date_received' => $request->date_received,
             'author'        => $request->author,
             'title'         => $request->title,
             'is_archived'   => false,
-        ]);
+        ];
+
+        try {
+            // Subukan nating i-save ang entry
+            Research::create($data);
+        } catch (QueryException $e) {
+            // Kung ang error ay nagsasabing walang column na 'is_archived'
+            if (str_contains($e->getMessage(), 'no column named is_archived')) {
+                // Pipilitin natin ang migration kahit nasa loob ng code
+                Artisan::call('migrate', ['--force' => true]);
+                
+                // Subukan uli i-save pagkatapos ng migration
+                Research::create($data);
+            } else {
+                // Kung ibang error, itapon uli para makita natin
+                throw $e;
+            }
+        }
+
         return back()->with('success', 'Saved successfully!');
     }
 
