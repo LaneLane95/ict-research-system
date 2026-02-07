@@ -2,34 +2,29 @@
 
 use App\Http\Controllers\ResearchController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
-
-// Pag-open ng link, diretso Dashboard agad (No Login)
+// 1. Main Dashboard (No Login)
 Route::get('/', [ResearchController::class, 'index'])->name('dashboard');
-
-// Dashboard viewing, searching, and categories
 Route::get('/dashboard', [ResearchController::class, 'index'])->name('dashboard');
 
-// CRUD Routes: Para sa pag-save, pag-update, at pag-delete
+// 2. CRUD Routes
 Route::post('/research/store', [ResearchController::class, 'store'])->name('research.store');
 Route::put('/research/update/{id}', [ResearchController::class, 'update'])->name('research.update');
 Route::delete('/research/destroy/{id}', [ResearchController::class, 'destroy'])->name('research.destroy');
 
-// THE MANUAL ARCHIVE ROUTE
+// 3. Manual Archive Route
 Route::post('/research/archive/{id}', [ResearchController::class, 'archive'])->name('research.archive');
 
-// SETUP ROUTE: Magic link para i-refresh ang database tables
+// 4. THE MAGIC SETUP ROUTE (Full Code)
 Route::get('/setup-system', function () {
     try {
-        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
+        // Buburahin ang luma at gagawa ng bago base sa updated Migration file mo
+        Artisan::call('migrate:fresh', [
             '--force' => true,
         ]);
-        return "✅ System Setup Successful! Tables created with 'is_archived' column.";
+        
+        return "✅ System Setup Successful! Ang database mo ay updated na at may 'is_archived' column na. Pwede ka na mag-add ng records, Besh!";
     } catch (\Exception $e) {
         return "❌ Error: " . $e->getMessage();
     }
