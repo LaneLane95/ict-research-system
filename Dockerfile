@@ -7,8 +7,10 @@ ENV WEBROOT /var/www/html/public
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 
-# Install dependencies at ayusin ang permissions
+# Install dependencies
 RUN composer install --no-dev --ignore-platform-reqs
+
+# Siguraduhin na may database file at tama ang permissions
 RUN mkdir -p /var/www/html/database && touch /var/www/html/database/database.sqlite
 RUN chmod -R 777 /var/www/html/storage /var/www/html/database /var/www/html/bootstrap/cache
 
@@ -17,5 +19,5 @@ RUN php artisan config:clear
 RUN php artisan route:clear
 RUN php artisan view:clear
 
-# HINDI natin ilalagay dito ang migrate --force para hindi mag-fail ang build.
-# Gagawin natin yun via browser later.
+# Ito ang magpapatakbo ng server (Nginx + PHP-FPM)
+CMD ["/start.sh"]
