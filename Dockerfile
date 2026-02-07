@@ -2,22 +2,17 @@ FROM richarvey/nginx-php-fpm:latest
 
 COPY . /var/www/html
 
-# I-set ang Public folder bilang Webroot
+# Siguraduhin na ang Webroot ay nakaturo sa public folder
 ENV WEBROOT /var/www/html/public
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 
-# Install dependencies
-RUN composer install --no-dev --ignore-platform-reqs
+# Permissions para hindi mag-500 Error
+RUN mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
+RUN touch /var/www/html/database/database.sqlite
+RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 
-# Siguraduhin na may database file at tama ang permissions
-RUN mkdir -p /var/www/html/database && touch /var/www/html/database/database.sqlite
-RUN chmod -R 777 /var/www/html/storage /var/www/html/database /var/www/html/bootstrap/cache
-
-# Linisin ang cache para fresh ang setup
+# Clean cache
 RUN php artisan config:clear
-RUN php artisan route:clear
-RUN php artisan view:clear
 
-# Ito ang magpapatakbo ng server (Nginx + PHP-FPM)
 CMD ["/start.sh"]
