@@ -16,11 +16,9 @@ class ResearchController extends Controller
         
         $query = Research::query();
 
-        // Pag 'Archived' ang pinili sa filter/link, ipakita lang ang naka-archive
         if ($selectedCategory == 'Archived') {
             $query->where('is_archived', true);
         } else {
-            // Default: Ipakita lang ang hindi naka-archive
             $query->where('is_archived', false);
             if ($selectedCategory) {
                 $query->where('category', $selectedCategory);
@@ -36,7 +34,6 @@ class ResearchController extends Controller
 
         $researches = $query->latest()->get();
 
-        // Stats para sa Dashboard Cards
         $overallStats = [
             'total' => Research::count(),
             'deped' => Research::where('category', 'DepEd')->where('is_archived', false)->count(),
@@ -55,22 +52,17 @@ class ResearchController extends Controller
             'date_received' => $request->date_received,
             'author'        => $request->author,
             'title'         => $request->title,
+            'theme'         => $request->title,
             'is_archived'   => false,
         ];
 
         try {
-            // Subukan nating i-save ang entry
             Research::create($data);
         } catch (QueryException $e) {
-            // Kung ang error ay nagsasabing walang column na 'is_archived'
             if (str_contains($e->getMessage(), 'no column named is_archived')) {
-                // Pipilitin natin ang migration kahit nasa loob ng code
                 Artisan::call('migrate', ['--force' => true]);
-                
-                // Subukan uli i-save pagkatapos ng migration
                 Research::create($data);
             } else {
-                // Kung ibang error, itapon uli para makita natin
                 throw $e;
             }
         }
@@ -78,7 +70,6 @@ class ResearchController extends Controller
         return back()->with('success', 'Saved successfully!');
     }
 
-    // ETO YUNG ARCHIVE FUNCTION
     public function archive($id) 
     {
         $research = Research::findOrFail($id);
