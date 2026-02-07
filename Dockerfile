@@ -2,13 +2,14 @@ FROM richarvey/nginx-php-fpm:latest
 
 COPY . /var/www/html
 
-# Dito natin ituturo sa main folder mismo
-ENV WEBROOT /var/www/html
+# I-set ang Webroot pabalik sa /public para malinis ang routing
+ENV WEBROOT /var/www/html/public
 ENV APP_ENV=production
 ENV APP_DEBUG=true
 
-# I-copy ang laman ng public folder sa labas para sigurado
-RUN cp -r /var/www/html/public/* /var/www/html/ || true
+# --- ETO ANG MAGIC FIX PARA SA 404/NOT FOUND ---
+# Pinupuwersa nito si Nginx na hanapin ang index.php sa loob ng public folder
+RUN sed -i 's|try_files $uri $uri/ =404;|try_files $uri $uri/ /index.php?$query_string;|g' /etc/nginx/sites-available/default.conf
 
 # Install dependencies
 RUN composer install --no-dev --ignore-platform-reqs
