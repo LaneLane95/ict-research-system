@@ -17,11 +17,12 @@ class ResearchController extends Controller
         
         $query = Research::query();
 
-        // Filter based on Archive status
         if ($selectedCategory == 'Archived') {
             $query->where('is_archived', true);
         } elseif ($selectedCategory) {
             $query->where('category', $selectedCategory)->where('is_archived', false);
+        } else {
+            $query->where('is_archived', false);
         }
 
         if ($search) {
@@ -33,7 +34,6 @@ class ResearchController extends Controller
 
         $researches = $query->latest()->get();
 
-        // Statistics for the Dashboard cards
         $overallStats = [
             'total' => Research::count(),
             'deped' => Research::where('category', 'DepEd')->where('is_archived', false)->count(),
@@ -56,11 +56,8 @@ class ResearchController extends Controller
                 'is_archived'   => false,
             ]);
         } catch (QueryException $e) {
-            // Error handling: If is_archived column is missing, run migration automatically
             if (str_contains($e->getMessage(), 'no column named is_archived')) {
                 Artisan::call('migrate', ['--force' => true]);
-                
-                // Retry saving after fixing the database schema
                 Research::create([
                     'category'      => $request->category,
                     'sub_type'      => $request->sub_type,
@@ -79,18 +76,8 @@ class ResearchController extends Controller
     public function update(Request $request, $id) 
     {
         $research = Research::findOrFail($id);
-        
-        // Manual update to ensure dates are saved correctly
-        $research->title = $request->title;
-        $research->author = $request->author;
-        $research->school_name = $request->school_name;
-        $research->endorsement_date = $request->endorsement_date;
-        $research->released_date = $request->released_date;
-        $research->coc_date = $request->coc_date;
-        
-        $research->save();
-
-        return back()->with('success', 'Updated successfully!');
+        $research->update($request->all());
+        return back()->with('success', 'Updated!');
     }
 
     public function archive($id) 
@@ -98,12 +85,12 @@ class ResearchController extends Controller
         $research = Research::findOrFail($id);
         $research->is_archived = true;
         $research->save();
-        return back()->with('success', 'Archived successfully!');
+        return back()->with('success', 'Archived!');
     }
 
     public function destroy($id) 
     {
         Research::findOrFail($id)->delete();
-        return back()->with('success', 'Record deleted!');
+        return back();
     }
 }

@@ -15,7 +15,7 @@ Route::put('/research/update/{id}', [ResearchController::class, 'update'])->name
 Route::delete('/research/destroy/{id}', [ResearchController::class, 'destroy'])->name('research.destroy');
 Route::post('/research/archive/{id}', [ResearchController::class, 'archive'])->name('research.archive');
 
-// THE ULTIMATE RESET ROUTE
+// THE ULTIMATE RESET ROUTE (Fixes SQLite File Locking)
 Route::get('/setup-system', function () {
     try {
         $dbPath = database_path('database.sqlite');
@@ -34,7 +34,7 @@ Route::get('/setup-system', function () {
             '--force' => true,
         ]);
         
-        return "✅ BOOM! RECONSTRUCTED! May 'is_archived' na ang database mo, Besh. Try mo na mag-add!";
+        return "✅ BESH! MALINIS NA ANG DATABASE! May 'is_archived' na ang database mo. Try mo na mag-add!";
     } catch (\Exception $e) {
         return "❌ Error: " . $e->getMessage();
     }
