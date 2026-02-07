@@ -105,7 +105,8 @@
                                 </td>
                                 <td class="px-6 py-5 text-center text-[9px] font-black text-slate-400">
                                     <span class="text-blue-600">E: {{ $res->endorsement_date ?? '---' }}</span><br>
-                                    <span class="text-emerald-600">R: {{ $res->released_date ?? '---' }}</span>
+                                    <span class="text-emerald-600">R: {{ $res->released_date ?? '---' }}</span><br>
+                                    <span class="text-indigo-600">C: {{ $res->coc_date ?? '---' }}</span>
                                 </td>
                                 <td class="px-6 py-5 text-center no-print space-x-3">
                                     <button onclick="openEditModal({{ $res }})" class="text-amber-600 font-black text-[9px] uppercase border-b-2 border-amber-100 hover:border-amber-600">Edit</button>
@@ -155,9 +156,7 @@
                 <div class="col-span-2"><textarea name="title" placeholder="Research Title" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs" rows="2"></textarea></div>
                 <div><input type="text" name="type_of_research" placeholder="Type of Research" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs"></div>
                 <div><input type="text" name="theme" placeholder="Theme" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs"></div>
-                @if($selectedCategory != 'Non-DepEd')
-                <div class="col-span-2"><label class="text-[9px] font-black text-slate-400 uppercase ml-2">COC Date</label><input type="date" name="coc_date" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs"></div>
-                @endif
+                
                 <div class="col-span-2 flex gap-3 mt-4">
                     <button type="submit" class="flex-grow py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs shadow-xl">Save Record</button>
                     <button type="button" onclick="toggleModal('addModal')" class="px-8 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-xs">Cancel</button>
@@ -178,6 +177,12 @@
                 <div><label class="text-[9px] font-black text-slate-400 uppercase ml-2">School Name</label><input type="text" name="school_name" id="edit_school_name" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold outline-none"></div>
                 <div><label class="text-[9px] font-black text-slate-400 uppercase ml-2">Endorsement Date</label><input type="date" name="endorsement_date" id="edit_endorsement_date" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold outline-none"></div>
                 <div><label class="text-[9px] font-black text-slate-400 uppercase ml-2">Released Date</label><input type="date" name="released_date" id="edit_released_date" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold outline-none"></div>
+                
+                <div class="col-span-2">
+                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">COC Date</label>
+                    <input type="date" name="coc_date" id="edit_coc_date" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold outline-none">
+                </div>
+
                 <div class="col-span-2 flex gap-3 mt-4">
                     <button type="submit" class="flex-grow py-4 bg-amber-500 text-white rounded-2xl font-black uppercase text-xs shadow-xl">Update Record</button>
                     <button type="button" onclick="toggleModal('editModal')" class="px-8 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-xs">Cancel</button>
@@ -191,12 +196,18 @@
         
         function openEditModal(data) {
             const form = document.getElementById('editForm');
+            // Siguraduhin na tama ang route sa Controller mo
             form.action = `/research/update/${data.id}`;
+            
             document.getElementById('edit_title').value = data.title;
             document.getElementById('edit_author').value = data.author;
             document.getElementById('edit_school_name').value = data.school_name || '';
             document.getElementById('edit_endorsement_date').value = data.endorsement_date || '';
             document.getElementById('edit_released_date').value = data.released_date || '';
+            
+            // FILL COC DATE VALUE
+            document.getElementById('edit_coc_date').value = data.coc_date || '';
+            
             toggleModal('editModal');
         }
     </script>
