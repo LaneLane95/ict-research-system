@@ -7,15 +7,17 @@ ENV WEBROOT /var/www/html/public
 ENV APP_ENV=production
 ENV APP_DEBUG=true
 
-# Gawa ng database folder at file
+# 1. INSTALL DEPENDENCIES (Eto yung nawala kaya nag-fail)
+RUN composer install --no-dev --ignore-platform-reqs
+
+# 2. Gawa ng database folder at file
 RUN mkdir -p /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache
 RUN touch /var/www/html/database/database.sqlite
 
-# Force permissions sa lahat ng kailangan
+# 3. Force permissions
 RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 
-# Clear everything
+# 4. Clear everything (Gagana na 'to kasi may vendor na)
 RUN php artisan config:clear
-RUN php artisan cache:clear
 
 CMD ["/start.sh"]
